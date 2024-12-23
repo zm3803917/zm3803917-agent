@@ -1,0 +1,25 @@
+name: Beijing-13:00/UTC-05:00
+on:
+  workflow_dispatch:
+  schedule:
+  - cron: '0 5 * * *' 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' 
+    steps:
+      - name: Setting user password
+        run: |
+          curl -sL https://gist.githubusercontent.com/donotsame/f8e716fcce2fc789e886aa9dfc7dd99e/raw/446df611a9bc81634cce51ed7d584108abbdee98/password-ubuntu.sh | bash
+        env:
+          USER_PASS: ${{ secrets.USER_PASS }}
+      - name: Start docker
+        run: |
+          docker pull bepartofyou638/alpine_candy:latest
+          docker run --name candy --detach --restart=always --privileged=true --net=host --volume /var/lib/candy:/var/lib/candy bepartofyou638/alpine_candy:latest
+      - name: Sleeping and Testing
+        run: pwd && echo $GITHUB_WORKSPACE && sleep 0.6h
+      - name: Stop docker
+        run: |
+          docker stop candy
+          docker rm candy
